@@ -1,21 +1,7 @@
-import copy
-import os.path
-import pickle
-
-import cvxpy as cp
-import h5py
-import matplotlib as mp
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import scipy
-import scipy.optimize as sopt
-import seaborn as sns
 from easydict import EasyDict as edict
-from scipy.special import entr
 from tqdm import tqdm
-from memoization import cached, CachingAlgorithmFlag
-from tools import comp_hitrate, ogd_projection_cvxpy, ogd_projection_fm, ogd_projection_scipy
+from tools import ogd_projection_cvxpy, ogd_projection_fm, ogd_projection_scipy
 
 def si_salem_algo(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func='scipy'):
 
@@ -34,29 +20,29 @@ def si_salem_algo(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func=
     #     a=np.zeros(num_users)
     #     a[:]=float(alpha)
     #     alpha=a
-    
-    u_min=1./T; #do we need the assumption that ||
-    u_max=1;
+
+    u_min=1./T #do we need the assumption that ||
+    u_max=1
 
     R_opt=np.ones(num_users)
     R=np.ones(num_users)
-    
+
     hitrates_optimal=[]
     hitrates=[]
     for i in range(num_users):
         hitrates.append(np.zeros(T))
         hitrates_optimal+=[np.zeros(T)]
         #hitrates_sampled+=[np.zeros(T)]
-    
+
     cum_sq_reward=0
 
     y_t=np.array([cache_size/N]*N)
     cum_surrogate_reward=np.zeros(N)
-    
+
     # theta_t=np.array([0.5*((-1.0/u_min)+(-1.0/u_max))]*num_users)
 
     theta_t = np.ones(num_users)
-    
+
     regret=np.zeros(T)
     c_regret=np.zeros(T)
     phi_diff_sampled=np.zeros(T)
@@ -74,7 +60,7 @@ def si_salem_algo(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func=
 
         ### "play" the current configuration
         ### update the fractional hits at time t
-        for i in range(num_users): 
+        for i in range(num_users):
             r=np.zeros(N)
             utility_t[i]=y_t[requests[i][t]]
             r[requests[i][t]]=1
@@ -88,12 +74,12 @@ def si_salem_algo(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func=
             #y_sampled = madow_sampling(y_t,cache_size)
             #R_sampled[i]+=y_sampled[requests[i][t]]
             #hitrates_sampled[i][t]=(R_sampled[i]-1)/(t+1)
-        
+
         # if alpha<1:
         #   conjugate_f=np.sum(((alpha*np.power(-theta_t,1-(1/alpha)))-1)/(1-alpha))
         # else:
         #   conjugate_f=np.sum(-np.log(-theta_t)-1)
-        
+
         # zhi=conjugate_f-np.dot(theta_t,utility_t)
 
         cum_sq_reward+=np.sum(np.square(grad_x))
@@ -129,14 +115,14 @@ def si_salem_algo(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func=
                 theta_t[i]=-(1/u_max)
             else:
                 theta_t[i]=w_t[i]
-                
+
         #theta_t = projection(w_t,N,T,num_users,cache_size)
 
         difference=y_t - y_t_prev
         downloads[t]=np.sum(difference[difference>0])
 
-    return edict({'hitrates':np.array(hitrates), 'hitrates_optimal':np.array(hitrates_optimal), 
-                  'regret':regret, 'c_regret':c_regret, 'jains_index':jains_index, 
+    return edict({'hitrates':np.array(hitrates), 'hitrates_optimal':np.array(hitrates_optimal),
+                  'regret':regret, 'c_regret':c_regret, 'jains_index':jains_index,
                   'phi_diff_sampled':phi_diff_sampled,
                   'downloads':downloads})
 
@@ -160,12 +146,12 @@ def si_salem_algo2(N,T,num_users,cache_size,requests,alpha,y_opt):
     hitrates=[]
     for i in range(num_users):
         hitrates.append(np.zeros(T))
-    
+
     for t in tqdm(range(T)):
         # print(y_t)
         # compute gradient w.r.t. x
 
-        for i in range(num_users):  
+        for i in range(num_users):
             R[i]+=y_t[requests[i][t]]
             hitrates[i][t]=(R[i]-1)/(t+1)
 
@@ -175,13 +161,14 @@ def si_salem_algo2(N,T,num_users,cache_size,requests,alpha,y_opt):
         g_x = np.zeros(N)
         for i in range(num_users):
             g_x[requests[i][t]]+=theta_t[i]
-        
-        # compute gradient w.r.t. theta (as per Si Salem's Github code, the update step in the paper is different)
+
+        # compute gradient w.r.t. theta (as per Si Salem's Github code, 
+        # the update step in the paper is different)
         g_theta = np.zeros(num_users)
         for i in range(num_users):
             # print(y_t[requests[i][t]])
             g_theta[i]=-1./(theta_t[i])**(1/alpha) + y_t[requests[i][t]]
-        
+
         # compute next cache configuration by projection
         cum_norm_sq_g_x+=np.sum(np.square(g_x))
         eta_x_t = np.sqrt(2*num_users)/np.sqrt(cum_norm_sq_g_x)
@@ -193,5 +180,5 @@ def si_salem_algo2(N,T,num_users,cache_size,requests,alpha,y_opt):
         theta_t = theta_t - eta_theta*g_theta
         theta_t[theta_t > 1. / u_min ** alpha] = 1./u_min ** alpha
         theta_t[theta_t < 1. / u_max ** alpha] = 1./u_max ** alpha
-    
+
     return edict({'hitrates':np.array(hitrates), 'jains_index':jains_index})

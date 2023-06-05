@@ -1,20 +1,7 @@
-import copy
-import os.path
-import pickle
-
 import cvxpy as cp
-import h5py
-import matplotlib as mp
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import scipy
 import scipy.optimize as sopt
-import seaborn as sns
 from easydict import EasyDict as edict
-from scipy.special import entr
-from tqdm import tqdm
-from memoization import cached, CachingAlgorithmFlag
 
 def comp_hitrate(N,T,num_users,cache_size,requests,y_opt):
     R_opt=np.zeros(num_users)
@@ -59,7 +46,7 @@ def ogd_projection_cvxpy(u,N,T,num_users,cache_size):
         constr+=[cp.sum(y)==cache_size]
         problem=cp.Problem(cp.Maximize(val),constr)
         problem.solve()
-        
+
         ### cache configuration for next iteration
         return y.value
 
@@ -79,10 +66,9 @@ def madow_sampling(p,k):
     P = p.cumsum() ### cumulative probability
     # print('P',P)
     U=np.random.rand() ### uniform random number in [0,1]
-    Us = np.arange(k)+U 
+    Us = np.arange(k)+U
     # print('Us: ', Us)
     idxs = np.searchsorted(P,Us)
     # print('idxs: ', idxs)
     y[idxs]=1
     return y
-        

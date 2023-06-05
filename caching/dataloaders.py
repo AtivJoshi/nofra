@@ -1,20 +1,6 @@
-import copy
 import os.path
-import pickle
-
-import cvxpy as cp
-import h5py
-import matplotlib as mp
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import scipy
-import scipy.optimize as sopt
-import seaborn as sns
-from easydict import EasyDict as edict
-from scipy.special import entr
-from tqdm import tqdm
-from memoization import cached, CachingAlgorithmFlag
 
 def generate_data(N,T,num_users,dists=None,rng=None):
     '''
@@ -28,22 +14,22 @@ def generate_data(N,T,num_users,dists=None,rng=None):
     if rng is None:
         rng=np.random.default_rng()
     # list of probability distribution for each user
-    requests=[] # list of generated requests 
+    requests=[] # list of generated requests
     if dists is None:
         dists=[]
-        for u in range(num_users): 
+        for u in range(num_users):
             q=rng.random(N)
             # q=np.ones(N)
             p=q/np.sum(q)
             dists.append(p)
     elif dists=='uniform':
         dists=[]
-        for u in range(num_users): 
+        for u in range(num_users):
             q=np.ones(N)
             p=q/np.sum(q)
             dists.append(p)
 
-    for u in range(num_users): 
+    for u in range(num_users):
         requests.append(rng.choice(N,T,p=dists[u]))
         # requests.append(rng.choice(N,T))
     return dists, requests
@@ -58,7 +44,7 @@ def load_cmu_data(num_users:int, num_files:int,folder_path:str="",file_name="CMU
     else:
         df = pd.read_csv(file_path, sep = ' ',engine='python')
         df.columns = ['Req_ID', 'File_ID', 'File_Size']
-        # To control the size of the library, we can rename the file i to (i % num_files). 
+        # To control the size of the library, we can rename the file i to (i % num_files).
         # This results in extremely bad accuracy, so avoiding it. Instead, drop the files when file_name > num_files.
         old_id = df.File_ID.unique()
         old_id.sort()
@@ -73,7 +59,7 @@ def load_cmu_data(num_users:int, num_files:int,folder_path:str="",file_name="CMU
         num_requests=raw_seq.size//num_users
         input_seq=np.array(np.array_split(raw_seq[:num_users*num_requests],num_users))
         np.save(cache_path,input_seq.T)
-        return input_seq.T 
+        return input_seq.T
 
 def load_cmu_data1(num_users:int, num_files:int,folder_path:str="",file_name="CMU_huge")->np.ndarray:
     #num_files set to 50, num_users to 3
@@ -87,7 +73,7 @@ def load_cmu_data1(num_users:int, num_files:int,folder_path:str="",file_name="CM
     else:
         df = pd.read_csv(file_path, sep = ' ',engine='python')
         df.columns = ['Req_ID', 'File_ID', 'File_Size']
-        # To control the size of the library, we can rename the file i to (i % num_files). 
+        # To control the size of the library, we can rename the file i to (i % num_files).
         # This results in extremely bad accuracy, so avoiding it. Instead, drop the files when file_name > num_files.
         old_id = df.File_ID.unique()
         old_id.sort()
@@ -107,7 +93,7 @@ def load_cmu_data1(num_users:int, num_files:int,folder_path:str="",file_name="CM
         f1=f[count_sort_ind]
         for i in range(num_files):
             input_seq1[np.argwhere(input_seq==f1[i])]=i
-        
+
         requests=np.zeros((3,500))
         counts=np.zeros(3,dtype=int)
         for i in range(1500):
@@ -120,7 +106,7 @@ def load_cmu_data1(num_users:int, num_files:int,folder_path:str="",file_name="CM
             else:
                 requests[2,counts[2]]=input_seq1[i]
                 counts[2]+=1
-        
+
         requests=requests.astype(int)
         np.save(cache_path,requests.T)
         return requests.T
@@ -132,7 +118,7 @@ def load_cmu_data1(num_users:int, num_files:int,folder_path:str="",file_name="CM
         # num_requests=raw_seq.size//num_users
         # input_seq=np.array(np.array_split(raw_seq[:num_users*num_requests],num_users))
         # #np.save(cache_path,input_seq.T)
-        # return input_seq.T 
+        # return input_seq.T
 
 def load_cmu_data2(num_users:int, num_files:int,folder_path:str="",file_name="CMU_huge")->np.ndarray:
     #num_files set to 50, num_users to 4
@@ -146,7 +132,7 @@ def load_cmu_data2(num_users:int, num_files:int,folder_path:str="",file_name="CM
     else:
         df = pd.read_csv(file_path, sep = ' ',engine='python')
         df.columns = ['Req_ID', 'File_ID', 'File_Size']
-        # To control the size of the library, we can rename the file i to (i % num_files). 
+        # To control the size of the library, we can rename the file i to (i % num_files).
         # This results in extremely bad accuracy, so avoiding it. Instead, drop the files when file_name > num_files.
         old_id = df.File_ID.unique()
         old_id.sort()
@@ -166,23 +152,23 @@ def load_cmu_data2(num_users:int, num_files:int,folder_path:str="",file_name="CM
         f1=f[count_sort_ind]
         for i in range(num_files):
             input_seq1[np.argwhere(input_seq==f1[i])]=i
-        
+
         requests=np.zeros((4,400))
         counts=np.zeros(4,dtype=int)
         for i in range(1600):
-          if input_seq1[i]<=5 and counts[0]<400:
-              requests[0,counts[0]]=input_seq1[i]
-              counts[0]+=1
-          elif input_seq1[i]<=8 and counts[1]<400:
-              requests[1,counts[1]]=input_seq1[i]
-              counts[1]+=1
-          elif input_seq1[i]<=11 and counts[2]<400:
-              requests[2,counts[2]]=input_seq1[i]
-              counts[2]+=1
-          else:
-              requests[3,counts[3]]=input_seq1[i]
-              counts[3]+=1
-        
+            if input_seq1[i]<=5 and counts[0]<400:
+                requests[0,counts[0]]=input_seq1[i]
+                counts[0]+=1
+            elif input_seq1[i]<=8 and counts[1]<400:
+                requests[1,counts[1]]=input_seq1[i]
+                counts[1]+=1
+            elif input_seq1[i]<=11 and counts[2]<400:
+                requests[2,counts[2]]=input_seq1[i]
+                counts[2]+=1
+            else:
+                requests[3,counts[3]]=input_seq1[i]
+                counts[3]+=1
+
         requests=requests.astype(int)
         np.save(cache_path,requests.T)
         return requests.T
@@ -194,4 +180,4 @@ def load_cmu_data2(num_users:int, num_files:int,folder_path:str="",file_name="CM
         # num_requests=raw_seq.size//num_users
         # input_seq=np.array(np.array_split(raw_seq[:num_users*num_requests],num_users))
         # #np.save(cache_path,input_seq.T)
-        # return input_seq.T 
+        # return input_seq.T    

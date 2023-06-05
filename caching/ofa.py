@@ -1,20 +1,6 @@
-import copy
-import os.path
-import pickle
-
-import cvxpy as cp
-import h5py
-import matplotlib as mp
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import scipy
-import scipy.optimize as sopt
-import seaborn as sns
 from easydict import EasyDict as edict
-from memoization import CachingAlgorithmFlag, cached
-from scipy.special import entr
-from tools import comp_hitrate, ogd_projection_cvxpy, ogd_projection_fm, ogd_projection_scipy, madow_sampling
+from tools import ogd_projection_cvxpy, ogd_projection_fm, ogd_projection_scipy, madow_sampling
 from tqdm import tqdm
 
 
@@ -36,7 +22,7 @@ def ogd_alpha_util(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func
     R_opt=np.ones(num_users)
     R=np.ones(num_users)
     R_sampled=np.ones(num_users)
-    
+
     hitrates_optimal=[]
     hitrates=[]
     hitrates_sampled=[]
@@ -44,7 +30,7 @@ def ogd_alpha_util(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func
         hitrates.append(np.zeros(T))
         hitrates_optimal+=[np.zeros(T)]
         hitrates_sampled+=[np.zeros(T)]
-    
+
     cum_sq_reward=0
 
     y_t=np.array([cache_size/N]*N)
@@ -66,7 +52,7 @@ def ogd_alpha_util(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func
 
         ### "play" the current configuration
         ### update the fractional hits at time t
-        for i in range(num_users):  
+        for i in range(num_users):
             R[i]+=y_t[requests[i][t]]
             hitrates[i][t]=(R[i]-1)/(t+1)
 
@@ -109,7 +95,7 @@ def ogd_alpha_util(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func
         difference=y_t - y_t_prev
         downloads[t]=np.sum(difference[difference>0])
 
-    return edict({'hitrates':np.array(hitrates), 'hitrates_optimal':np.array(hitrates_optimal), 
+    return edict({'hitrates':np.array(hitrates), 'hitrates_optimal':np.array(hitrates_optimal),
                   'regret':regret, 'c_regret':c_regret, 'jains_index':jains_index, 'jains_index_opt':jains_index_opt,
                   'phi_diff_sampled':phi_diff_sampled, 'hitrates_sampled':hitrates_sampled,
                   'downloads':downloads})

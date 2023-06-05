@@ -1,23 +1,10 @@
-import copy
-import os.path
-import pickle
-
-import cvxpy as cp
-import h5py
-import matplotlib as mp
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import scipy
-import scipy.optimize as sopt
-import seaborn as sns
 from easydict import EasyDict as edict
-from scipy.special import entr
 from tqdm import tqdm
 from memoization import cached, CachingAlgorithmFlag
 
 def replacement_policy(N,T,num_users,cache_size,requests,policy='lru'):
-    
+
     @cached(max_size=cache_size, algorithm=CachingAlgorithmFlag.LRU)
     def c_lru(x):
         return x
@@ -27,7 +14,7 @@ def replacement_policy(N,T,num_users,cache_size,requests,policy='lru'):
     @cached(max_size=cache_size, algorithm=CachingAlgorithmFlag.FIFO)
     def c_fifo(x):
         return x
-    
+
     algo=None
     if policy=='lru':
         algo=c_lru
@@ -35,7 +22,7 @@ def replacement_policy(N,T,num_users,cache_size,requests,policy='lru'):
         algo=c_lfu
     else:
         algo=c_fifo
-    
+
     R=np.ones(num_users)
     jains_index=np.zeros(T)
 
@@ -54,10 +41,9 @@ def replacement_policy(N,T,num_users,cache_size,requests,policy='lru'):
             algo(requests[i][t])
             R[i]+=y_t[requests[i][t]]
             hitrates[i][t]=(R[i]-1)/(t+1)
-        
+
         jains_index[t]=np.sum(R)**2/(num_users*np.sum(np.power(R,2)))
         y_t_prev=y_t
 
-    return edict({'hitrates':hitrates, 'downloads':downloads, 
+    return edict({'hitrates':hitrates, 'downloads':downloads,
                   'jains_index':jains_index})
-

@@ -1,20 +1,5 @@
-import copy
-import os.path
-import pickle
-
 import cvxpy as cp
-import h5py
-import matplotlib as mp
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import scipy
-import scipy.optimize as sopt
-import seaborn as sns
-from easydict import EasyDict as edict
-from scipy.special import entr
-from tqdm import tqdm
-from memoization import cached, CachingAlgorithmFlag
 
 def optimal_config_alpha_util(N,T,num_users,cache_size,requests,alpha,max_iter=2000,method='fw'):
 
@@ -41,7 +26,7 @@ def optimal_config_alpha_util(N,T,num_users,cache_size,requests,alpha,max_iter=2
         R=[1]*num_users
         reward=0
         constr=[] # constraints
-        
+
         #compute cumulative file requests vectors for each user
         X_T = []
         for i in range(num_users):
@@ -51,7 +36,7 @@ def optimal_config_alpha_util(N,T,num_users,cache_size,requests,alpha,max_iter=2
             arr[f]=c
             # print(arr,'\n\n')
             X_T.append(arr)
-        
+
         for i in range(num_users):
             reward+=cp.power(X_T[i]@y,1-alpha[i])/(1-alpha[i])
         for i in range(N):
@@ -80,10 +65,10 @@ def optimal_config_alpha_util(N,T,num_users,cache_size,requests,alpha,max_iter=2
             arr[f]=c
             # print(arr,'\n\n')
             X_T.append(arr)
-            
+
         #### initialize y_k
         y_k=np.array([num_users/N]*N)
-        
+
         for step in range(max_iter):
             # print(y_k)
             #### computing the gradient at y_k
@@ -92,7 +77,7 @@ def optimal_config_alpha_util(N,T,num_users,cache_size,requests,alpha,max_iter=2
                 # df_y_k+=((1-alpha)/(np.dot(X_T[i],y_k)**(alpha)))*X_T[i]
                 df_y_k+=((-1.)/(np.dot(X_T[i],y_k)**(alpha[i])))*X_T[i]
 
-            
+
             # print(df_y_k)
             #### compute z_k by sorting f_y_k
             idx=df_y_k.argsort()
@@ -104,9 +89,9 @@ def optimal_config_alpha_util(N,T,num_users,cache_size,requests,alpha,max_iter=2
             y_prev=y_k
             y_k=y_k+eta*(z_k-y_k)
             # print(np.max(np.absolute(y_prev-y_k)))
-        
+
         return y_k,np.array(X_T)@y_k
-    
+
     if method=='fw':
         return optimal_config_fw(N,T,num_users,cache_size,requests,alpha,max_iter)
     elif method=='cvxpy':
@@ -139,7 +124,7 @@ def maximin_optimal_config(N,T,num_users,cache_size,requests):
 
     for i in range(num_users):
         constr+=[X_T[i]@y>=v]
-    
+
     problem=cp.Problem(cp.Maximize(v),constr)
     problem.solve()
 
