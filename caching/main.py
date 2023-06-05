@@ -1,7 +1,6 @@
 import pickle
 from pathlib import Path
 
-import matplotlib as mp
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -74,8 +73,7 @@ def set_theme():
                                'axes.labelsize': 16.0, 'axes.titlesize': 16.0,
                                'legend.fontsize': 12.0})
 
-def genearate_plot_avg_hitrate():
-    set_theme()
+def load_output():
     if dataset=='cmu':
         from_pickle=pickle.load(open(f'{path}/{dataset}_T{T}_N{N}_m{num_users}_k{cache_size}.p','rb'))
     else:
@@ -90,7 +88,11 @@ def genearate_plot_avg_hitrate():
     requests=from_pickle.requst_sequence
     # ops_diff_alphas=from_pickle.ops_diff_alphas
     ops_salem=from_pickle.ops_salem
+    return ops,ops_lru,ops_lfu,ops_maximin,ops_salem,requests
 
+def genearate_plot_avg_hitrate():
+    set_theme()
+    ops,ops_lru,ops_lfu,ops_maximin,ops_salem,requests = load_output()
     means_opf=[]
     means_salem=[]
     means_opf_sampled=[]
@@ -155,23 +157,6 @@ def genearate_plot_avg_hitrate():
     legendFig = plt.figure("Legend plot")
     legendFig.legend([l1, l2, l3, l4,l5,l6], [l.get_label() for l in lines], loc='center',ncol=len(lines))
     legendFig.savefig(path+f'/{dataset}_legend_h.pdf',bbox_inches="tight")
-
-def load_output():
-    if dataset=='cmu':
-        from_pickle=pickle.load(open(f'{path}/{dataset}_T{T}_N{N}_m{num_users}_k{cache_size}.p','rb'))
-    else:
-        from_pickle=pickle.load(open(f'{path}/{dataset}_T{T}_N{N}_m{num_users}_k{cache_size}_seed{seed}.p','rb'))
-
-    # #### output_dic keys: dict_keys(['hitrates', 'hitrates_optimal', 'regret', 'c_regret', 'jains_index'])
-    ops=from_pickle.ops
-    ops_lru=from_pickle.ops_lru
-    ops_lfu=from_pickle.ops_lfu
-    # maximin_hitrate=from_pickle.maximin_hitrate
-    ops_maximin=from_pickle.ops_maximin
-    requests=from_pickle.requst_sequence
-    # ops_diff_alphas=from_pickle.ops_diff_alphas
-    ops_salem=from_pickle.ops_salem
-    return ops,ops_lru,ops_lfu,ops_maximin,ops_salem,requests
 
 def generate_plot_min_hitrate():
     set_theme()
@@ -306,7 +291,7 @@ if __name__=="__main__":
         requests=load_synthetic_data()
 
     #### uncomment the following functions
-    compute()
+    # compute()
     genearate_plot_avg_hitrate()
     generate_plot_min_hitrate()
     generate_plot_jains_index()
