@@ -11,7 +11,7 @@ def comp_hitrate(N,T,num_users,cache_size,requests,y_opt):
         hitrates_optimal+=[np.zeros(T)]
 
     for t in range(T):
-        g=np.zeros(N)
+        # g=np.zeros(N)
         for i in range(num_users):
             # if requests[i][t] in y_opt:
             R_opt[i]+=y_opt[requests[i][t]]
@@ -32,23 +32,23 @@ def ogd_projection_fm(u,N,T,num_users,cache_size,max_iter=500):
         z_k[idx[:cache_size]]=1
         # print(z_k)
         eta=(2./(step+2))
-        y_prev=y_k
+        # y_prev=y_k
         y_k=y_k+eta*(z_k-y_k)
     return y_k
 
 def ogd_projection_cvxpy(u,N,T,num_users,cache_size):
-        y=cp.Variable(N,name='y')
-        val=-cp.norm(y-u)
-        # val=cum_surrogate_reward @ y - (1./(2*eta_t))*cp.norm(y)**2
-        constr=[]
-        for i in range(N):
-            constr+=[y[i]>=0,y[i]<=1]
-        constr+=[cp.sum(y)==cache_size]
-        problem=cp.Problem(cp.Maximize(val),constr)
-        problem.solve()
+    y=cp.Variable(N,name='y')
+    val=-cp.norm(y-u)
+    # val=cum_surrogate_reward @ y - (1./(2*eta_t))*cp.norm(y)**2
+    constr=[]
+    for i in range(N):
+        constr+=[y[i]>=0,y[i]<=1]
+    constr+=[cp.sum(y)==cache_size]
+    problem=cp.Problem(cp.Maximize(val),constr)
+    problem.solve()
 
-        ### cache configuration for next iteration
-        return y.value
+    ### cache configuration for next iteration
+    return y.value
 
 def ogd_projection_scipy(u,N,T,num_users,cache_size):
     fun= lambda x: np.sum(np.power(x-u,2))

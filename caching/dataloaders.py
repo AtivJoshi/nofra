@@ -41,25 +41,24 @@ def load_cmu_data(num_users:int, num_files:int,folder_path:str="",file_name="CMU
 
     if os.path.isfile(cache_path):
         return np.load(cache_path)
-    else:
-        df = pd.read_csv(file_path, sep = ' ',engine='python')
-        df.columns = ['Req_ID', 'File_ID', 'File_Size']
-        # To control the size of the library, we can rename the file i to (i % num_files).
-        # This results in extremely bad accuracy, so avoiding it. Instead, drop the files when file_name > num_files.
-        old_id = df.File_ID.unique()
-        old_id.sort()
-        new_id = dict(zip(old_id, np.arange(len(old_id))))
-        df = df.replace({"File_ID": new_id})
-        df.drop(list(df[df['File_ID']>=num_files].index),inplace=True) ##pyright: reportGeneralTypeIssues=false
+    df = pd.read_csv(file_path, sep = ' ',engine='python')
+    df.columns = ['Req_ID', 'File_ID', 'File_Size']
+    # To control the size of the library, we can rename the file i to (i % num_files).
+    # This results in extremely bad accuracy, so avoiding it. Instead, drop the files when file_name > num_files.
+    old_id = df.File_ID.unique()
+    old_id.sort()
+    new_id = dict(zip(old_id, np.arange(len(old_id))))
+    df = df.replace({"File_ID": new_id})
+    df.drop(list(df[df['File_ID']>=num_files].index),inplace=True) ##pyright: reportGeneralTypeIssues=false
 
-        # array of file requests
-        raw_seq=df['File_ID'].to_numpy()
+    # array of file requests
+    raw_seq=df['File_ID'].to_numpy()
 
-        # split raw_seq into chunks of size <num_users>
-        num_requests=raw_seq.size//num_users
-        input_seq=np.array(np.array_split(raw_seq[:num_users*num_requests],num_users))
-        np.save(cache_path,input_seq.T)
-        return input_seq.T
+    # split raw_seq into chunks of size <num_users>
+    num_requests=raw_seq.size//num_users
+    input_seq=np.array(np.array_split(raw_seq[:num_users*num_requests],num_users))
+    np.save(cache_path,input_seq.T)
+    return input_seq.T
 
 def load_cmu_data1(num_users:int, num_files:int,folder_path:str="",file_name="CMU_huge")->np.ndarray:
     #num_files set to 50, num_users to 3

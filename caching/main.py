@@ -1,4 +1,5 @@
 import pickle
+from pathlib import Path
 
 import numpy as np
 from dataloaders import load_cmu_data2
@@ -8,7 +9,6 @@ from offline_algos import maximin_optimal_config, optimal_config_alpha_util
 from replacement_policies import replacement_policy
 from si_salem import si_salem_algo2
 from tools import comp_hitrate
-from pathlib import Path
 
 
 def load_synthetic_data():

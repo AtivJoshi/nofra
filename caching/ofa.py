@@ -44,8 +44,8 @@ def ogd_alpha_util(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func
     jains_index_opt=np.zeros(T)
     downloads=np.zeros(T)
 
-    online_reward=0
-    optimal_reward=0
+    # online_reward=0
+    # optimal_reward=0
 
     u_t=np.zeros(N)
     for t in tqdm(range(T)):

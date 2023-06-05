@@ -4,7 +4,7 @@ import numpy as np
 def optimal_config_alpha_util(N,T,num_users,cache_size,requests,alpha,max_iter=2000,method='fw'):
 
     def optimal_config_cvxpy(N,T,num_users,cache_size,requests,alpha):
-        '''
+        r'''
         uses cvxpy
         N: library size
         T: horizon
@@ -23,7 +23,7 @@ def optimal_config_alpha_util(N,T,num_users,cache_size,requests,alpha,max_iter=2
             alpha=a
 
         y=cp.Variable(N,name='y') # variables corresponding to cache configuration
-        R=[1]*num_users
+        # R=[1]*num_users
         reward=0
         constr=[] # constraints
 
@@ -86,7 +86,7 @@ def optimal_config_alpha_util(N,T,num_users,cache_size,requests,alpha,max_iter=2
             z_k[idx[:cache_size]]=1
             # print(z_k)
             eta=(2./(step+3))
-            y_prev=y_k
+            # y_prev=y_k
             y_k=y_k+eta*(z_k-y_k)
             # print(np.max(np.absolute(y_prev-y_k)))
 
@@ -111,7 +111,7 @@ def maximin_optimal_config(N,T,num_users,cache_size,requests):
         # print(arr,'\n\n')
         X_T.append(arr)
     # print(X_T)
-    X=np.array(X_T)
+    # X=np.array(X_T)
     # print(X)
 
     constr=[]
