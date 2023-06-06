@@ -4,7 +4,7 @@ from tools import ogd_projection_cvxpy, ogd_projection_fm, ogd_projection_scipy,
 from tqdm import tqdm
 
 
-def ogd_alpha_util(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func='scipy'):
+def ofa(N,T,num_users,cache_size,requests,alpha,y_opt,projection_func='scipy'):
 
     if projection_func == 'scipy':
         projection=ogd_projection_scipy

@@ -6,7 +6,7 @@ import numpy as np
 import seaborn as sns
 from dataloaders import load_cmu_data2
 from easydict import EasyDict as edict
-from ofa import ogd_alpha_util
+from ofa import ofa
 from offline_algos import maximin_optimal_config, optimal_config_alpha_util
 from replacement_policies import replacement_policy
 from si_salem import si_salem_algo2
@@ -33,7 +33,7 @@ def compute():
         for alpha in alphas:
             y_opt,_=optimal_config_alpha_util(N,T,num_users,cache_size,requests,alpha)
             print(f'{alpha:.3f}')
-            ops[f'{alpha:.3f}']=ogd_alpha_util(N,T,num_users,cache_size,requests,alpha,y_opt)
+            ops[f'{alpha:.3f}']=ofa(N,T,num_users,cache_size,requests,alpha,y_opt)
             ops_salem[f'{alpha:.3f}']=si_salem_algo2(N,T,num_users,cache_size,requests,alpha,y_opt)
 
         ops_lru=replacement_policy(N,T,num_users,cache_size,requests,policy='lru')
