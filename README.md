@@ -1,1 +1,9 @@
-# nofra
+# NOFRA
+This is the code repository for [No-regret Algorithms for Fair Resource Allocation](https://arxiv.org/abs/2303.06396). In this paper, we consider a fair resource allocation problem in the no-regret setting against an unrestricted adversary. The objective is to allocate resources equitably among several agents in an online fashion so that the difference of the aggregate $\alpha$-fair utilities of the agents achieved by an optimal static clairvoyant allocation and the online policy grows sublinearly with time. The problem inherits its difficulty from the non-additive nature of the global $\alpha$-fairness function. Previously, it was shown that no online policy could achieve a sublinear standard regret in this problem. In this paper, we propose an efficient online resource allocation policy, called Online Fair Allocation (\texttt{OFA}), that achieves sublinear $c_\alpha$-approximate regret with approximation factor $c_\alpha=(1-\alpha)^{-(1-\alpha)}\leq 1.445,$ for $0\leq \alpha < 1$. Our upper bound on the $c_\alpha$-regret for this problem exhibits a surprising \emph{phase transition} phenomenon -- transitioning from a power-law to a constant at the critical exponent $\alpha=0.5.$  Our result also resolves an open problem in designing an efficient no-regret policy for the online job scheduling problem in certain parameter regimes. Along the way, we introduce new algorithmic and analytical techniques, including greedy estimation of the future gradients for non-additive global reward functions and bootstrapping second-order regret bounds, which may be of independent interest.
+
+## Reproducing Results
+Install the requirements in `requirements.txt`.
+- To reproduce the results for caching experiments, run `python caching/main.py`. The plots will be saved as PDF files in the `caching/output` folder.
+- To reproduce the results for scheduling experiments, run `python scheduling/main.py`. The plots will be saved as PDF files in the `scheduling/output` folder.
+
+Read the inline comments for the explanation of code. 
