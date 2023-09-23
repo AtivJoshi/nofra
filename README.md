@@ -6,4 +6,4 @@ Install the requirements in `requirements.txt`.
 - To reproduce the results for caching experiments, run `python caching/main.py`. The plots will be saved as PDF files in the `caching/output` folder.
 - To reproduce the results for scheduling experiments, run `python scheduling/main.py`. The plots will be saved as PDF files in the `scheduling/output` folder.
 
-Read the inline comments for the explanation of code. 
+Please refer the inline comments for the explanation of code. 
